@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { asyncErrorHandler } from '../ErrorHandlers';
+import { sendApiResponse } from '../functions';
 import GroceryModel from '../models/grocery.model';
 import OrderModel, { IItemList } from '../models/order.model';
-import { sendApiResponse } from '../functions';
-import mongoose from 'mongoose';
 
 class OrderController {
   private groceryModel: typeof GroceryModel;
@@ -55,6 +54,11 @@ class OrderController {
         );
       }
 
+      const order = await this.orderModel.create({
+        createdBy: req?.userId,
+        itemList: orderList,
+      });
+
       const updateOperations = items?.map((it) => ({
         updateOne: {
           filter: { _id: it._id },
@@ -72,7 +76,7 @@ class OrderController {
         console.log('No items to update.');
       }
 
-      return sendApiResponse(res, null, 'Order Created Successfull');
+      return sendApiResponse(res, order, 'Order Created Successfull');
     }
   );
 }
